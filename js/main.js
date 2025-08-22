@@ -55,13 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
     "short_name": "Chismapa",
     "id": "/",
     "description": "Interactive story mapping application for Chismapa projects",
-    "start_url": window.location.origin + "/",
+    "start_url": window.location.href,
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#2563eb",
     "icons": [
         {
-            "src": window.location.origin + "/android-chrome-192x192.png",
+            "src": window.location.href + "android-chrome-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         }
