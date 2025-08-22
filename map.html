@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chismapa Story Map</title>
+    <meta name="description" content="Interactive story mapping application for Chismapa projects">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="offline-indicator" id="offlineIndicator">
+        📱 You're offline - some features may be limited
+    </div>
+
+    <!-- Install Popup Modal -->
+    <div class="install-popup" id="installPopup">
+        <div class="install-popup-content">
+            <div class="install-popup-icon">📱</div>
+            <h2>Install Chismapa Story Map</h2>
+            <p>Install this app on your device for quick access and an app-like experience. It works offline and feels like a native app!</p>
+            <div class="install-popup-buttons">
+                <button class="install-popup-btn primary" id="installConfirmBtn">Install Now</button>
+                <button class="install-popup-btn secondary" id="installCancelBtn">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div class="details-modal" id="detailsModal">
+        <div class="details-modal-content">
+            <div class="details-modal-header">
+                <h2 id="detailsModalTitle">Project Details</h2>
+                <button class="details-modal-close" id="detailsModalClose">×</button>
+            </div>
+            <div class="details-modal-body" id="detailsModalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <header class="header">
+        <h1>🗺️ Chismapa Story Map</h1>
+        <!-- PWA Install Button -->
+        <button class="install-btn" id="installBtn" style="display: none;">
+            📱 Install App
+        </button>
+    </header>
+
+    <div class="main-container">
+        <div class="story-panel">
+            <div class="category-filter">
+                <h3>Filter by Category</h3>
+                <div class="category-buttons" id="categoryButtons">
+                    <!-- Category buttons will be loaded here -->
+                </div>
+            </div>
+            
+            <div id="storyList">
+                <!-- Stories will be loaded here -->
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <div class="controls">
+                <button class="btn" id="prevBtn" disabled>← Previous</button>
+                <button class="btn" id="nextBtn">Next →</button>
+                <button class="btn" id="resetBtn">Reset View</button>
+                <button class="btn" id="centerBtn">Center Map</button>
+            </div>
+            
+            <!-- Map Mode Controls -->
+            <div class="map-mode-controls">
+                <button class="mode-btn active" id="baseMapBtn" data-mode="base">🗺️ Base</button>
+                <button class="mode-btn" id="satelliteBtn" data-mode="satellite">🛰️ Satellite</button>
+                <button class="mode-btn" id="maskBtn" data-mode="mask">🎭 Mask</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Modular JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/data-manager.js"></script>
+    <script src="js/map-manager.js"></script>
+    <script src="js/marker-manager.js"></script>
+    <script src="js/ui/story-panel.js"></script>
+    <script src="js/ui/details-modal.js"></script>
+    <script src="js/ui/map-controls.js"></script>
+    <script src="js/ui/pwa-manager.js"></script>
+    <script src="js/app-controller.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
