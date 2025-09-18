@@ -91,6 +91,22 @@ class MarkerManager {
         });
     }
 
+    clearHighlights() {
+    this.markers.forEach((marker) => {
+        // Close any open popups
+        marker.closePopup();
+        
+        // Reset marker icon to default
+        const markerIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: #2563eb; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+        marker.setIcon(markerIcon);
+    });
+}s
+
     clearMarkers() {
         this.markers.forEach(marker => {
             this.mapManager.getMap().removeLayer(marker);

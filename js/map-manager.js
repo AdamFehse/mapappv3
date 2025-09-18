@@ -1,4 +1,4 @@
-// Map Manager - Handles Leaflet map initialization and management
+// Map Manager - Handles Leaflet map initialization with custom zoom controls
 
 class MapManager {
     constructor() {
@@ -11,18 +11,64 @@ class MapManager {
 
     init(containerId) {
         this.map = L.map(containerId, {
-            zoomControl: false
+            zoomControl: false // Disable default zoom control
         }).setView(CONFIG.DEFAULT_CENTER, CONFIG.DEFAULT_ZOOM);
 
-        this.addZoomControl();
         this.createTileLayers();
         this.addBaseLayer();
+        this.setupCustomZoomControls();
     }
 
-    addZoomControl() {
-        L.control.zoom({
-            position: 'topleft'
-        }).addTo(this.map);
+    setupCustomZoomControls() {
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+
+        if (zoomInBtn) {
+            zoomInBtn.addEventListener('click', () => {
+                this.map.zoomIn();
+            });
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.addEventListener('click', () => {
+                this.map.zoomOut();
+            });
+        }
+
+        // Update zoom button states when zoom changes
+        this.map.on('zoomend', () => {
+            this.updateZoomButtonStates();
+        });
+
+        // Initial state update
+        this.updateZoomButtonStates();
+    }
+
+    updateZoomButtonStates() {
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        
+        const currentZoom = this.map.getZoom();
+        const maxZoom = this.map.getMaxZoom();
+        const minZoom = this.map.getMinZoom();
+
+        if (zoomInBtn) {
+            zoomInBtn.disabled = currentZoom >= maxZoom;
+            if (currentZoom >= maxZoom) {
+                zoomInBtn.classList.add('disabled');
+            } else {
+                zoomInBtn.classList.remove('disabled');
+            }
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.disabled = currentZoom <= minZoom;
+            if (currentZoom <= minZoom) {
+                zoomOutBtn.classList.add('disabled');
+            } else {
+                zoomOutBtn.classList.remove('disabled');
+            }
+        }
     }
 
     createTileLayers() {

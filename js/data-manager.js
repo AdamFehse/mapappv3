@@ -15,11 +15,11 @@ class DataManager {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             this.projects = await response.json();
             this.extractCategories();
             this.filteredProjects = [...this.projects];
-            
+
             console.log(`Loaded ${this.projects.length} projects with ${this.categories.length} categories`);
             return true;
         } catch (error) {
@@ -39,7 +39,7 @@ class DataManager {
     filterByCategory(category) {
         this.currentCategory = category;
         this.currentProjectIndex = 0;
-        
+
         if (category === '') {
             this.filteredProjects = [...this.projects];
         } else {
@@ -47,7 +47,7 @@ class DataManager {
                 project => project.ProjectCategory === category
             );
         }
-        
+
         return this.filteredProjects;
     }
 
@@ -56,7 +56,7 @@ class DataManager {
     }
 
     setCurrentProjectIndex(index) {
-        if (index >= 0 && index < this.filteredProjects.length) {
+        if (index >= -1 && index < this.getFilteredProjects().length) {
             this.currentProjectIndex = index;
             return true;
         }
