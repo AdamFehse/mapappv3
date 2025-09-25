@@ -4,25 +4,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chismapa Story Map</title>
-    <meta name="description" content="Interactive story mapping application for Chismapa projects">
+    <title>MíTuCultura Frontera</title>
+    <meta name="description" content="Interactive story map application">
     <meta name="theme-color" content="#2563eb">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
+    <link rel="manifest" href="site.webmanifest">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Mini Sidebar Styles */
+        .mini-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 60px;
+            background: #2563eb;
+            z-index: 1040;
+            transition: width 0.2s;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+        }
+
+
+        /* Enhanced collapsed state styling */
+        .mini-sidebar .sidebar-icon-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            width: 100%;
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            border-radius: 0;
+        }
+
+        .mini-sidebar .sidebar-icon-btn:hover {
+            background: #1e40af;
+            transform: translateX(2px);
+        }
+
+        .mini-sidebar .sidebar-icon-btn.active {
+            background: #1e40af;
+            border-left: 4px solid #fbbf24; /* Yellow accent */
+            color: #fbbf24;
+        }
+
+        /* Add icon scaling for better visibility */
+        .mini-sidebar .sidebar-icon-btn i {
+            font-size: 1.2rem;
+            transition: transform 0.2s ease;
+        }
+
+        .mini-sidebar .sidebar-icon-btn:hover i,
+        .mini-sidebar .sidebar-icon-btn.active i {
+            transform: scale(1.1);
+        }
+
+        /* Add a subtle pulse effect for active state */
+        .mini-sidebar .sidebar-icon-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(251, 191, 36, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+        }
+
+        .mini-sidebar .sidebar-label {
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: opacity 0.2s, max-width 0.2s;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .mini-sidebar:hover,
+        .mini-sidebar.expanded {
+            width: 220px;
+        }
+
+        .mini-sidebar:hover .sidebar-label,
+        .mini-sidebar.expanded .sidebar-label {
+            opacity: 1;
+            max-width: 120px;
+        }
+
+        @media (max-width: 991.98px) {
+            .mini-sidebar {
+                display: none !important;
+            }
+        }
+        /* Adjust other elements when mini-sidebar is present */
+        @media (min-width: 992px) {
+            .header-with-sidebar {
+                margin-left: 60px;
+            }
+            .controls-with-sidebar {
+                margin-left: 60px;
+            }
+        }
+
+        /* When sidebar expands, give it more space */
+        .mini-sidebar:hover ~ .header-with-sidebar,
+        .mini-sidebar.expanded ~ .header-with-sidebar {
+            margin-left: 220px;
+        }
+        .mini-sidebar:hover ~ .controls-with-sidebar,
+        .mini-sidebar.expanded ~ .controls-with-sidebar {
+            margin-left: 220px;
+        }
+    </style>
 </head>
 
 <body class="bg-primary bg-gradient" style="overflow: hidden; height: 100vh;">
     <!-- Offline Indicator -->
     <div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 d-none"
         id="offlineIndicator" style="z-index: 1050;">
-        📱 You're offline - some features may be limited
+        You're offline - some features may be limited
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
@@ -34,7 +148,7 @@
                     <div class="mb-3">
                         <span class="display-1">📱</span>
                     </div>
-                    <h2 class="mb-3">Install Chismapa Story Map</h2>
+                    <h2 class="mb-3">Install</h2>
                     <p class="text-muted mb-4">Install this app for quick access and offline use!</p>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-primary" id="installConfirmBtn">Install Now</button>
@@ -68,65 +182,52 @@
     </div>
 
     <!-- Header Overlay -->
-    <div class="position-fixed top-0 start-0 end-0 p-3" style="z-index: 1020; max-width: 50%;">
+    <div class="position-fixed top-0 start-0 end-0 p-3 header-with-sidebar" style="z-index: 1020; max-width: 50%;">
         <div class="rounded p-3">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h4 mb-0 text-primary fw-bold display-5">
-                    <p style="color:white; text-shadow: 1px 1px 2px black, -1px -1px 2px black, -1px 1px 2px black, 1px -1px 2px black;">Chismapa Story Map</p>
+                <h1 class="h4 mb-0 fw-bold display-5 d-flex align-items-center gap-2">
+                    MíTuCultura Frontera
                 </h1>
-
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Toggle Button -->
-    <button class="btn btn-primary position-fixed rounded-circle shadow-lg"
-        style="top: 120px; left: 20px; width: 60px; height: 60px; z-index: 1030; transition: opacity 0.3s ease;"
-        type="button" data-bs-toggle="offcanvas" data-bs-target="#projectSidebar" aria-controls="projectSidebar"
-        title="Open Project List" id="sidebarToggleBtn">
-        📋
-    </button>
 
-    <!-- Bootstrap Offcanvas Sidebar -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="projectSidebar" aria-labelledby="projectSidebarLabel"
-        data-bs-backdrop="false" data-bs-scroll="true" style="z-index: 1040;">
+    <!-- Responsive Mini Sidebar -->
+    <nav id="miniSidebar" class="mini-sidebar d-lg-flex flex-column align-items-center py-3">
+        <!-- Toggle button for small screens -->
+        <button class="btn btn-primary d-lg-none mb-3" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Sidebar icons (example) -->
+        <button class="sidebar-icon-btn" title="All Categories" onclick="filterByCategory('')">
+            <i class="bi bi-list"></i>
+            <span class="sidebar-label">All</span>
+        </button>
+        <button class="sidebar-icon-btn" title="Art" onclick="filterByCategory('Art')">
+            <i class="bi bi-palette"></i>
+            <span class="sidebar-label">Art</span>
+        </button>
+        <!-- Add more category buttons dynamically via JS -->
+    </nav>
 
-        <!-- Offcanvas Header -->
-        <div class="offcanvas-header bg-primary text-white">
-            <h5 class="offcanvas-title fw-bold" id="projectSidebarLabel">📍 Project Stories</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                aria-label="Close"></button>
+    <!-- Offcanvas for small screens -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Project Stories</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-
-        <!-- Offcanvas Body -->
-        <div class="offcanvas-body p-0 d-flex flex-column">
-
-            <!-- Category Filters -->
-            <div class="p-3 border-bottom bg-light flex-shrink-0">
-                <h6 class="fw-bold mb-2 text-dark">Filter by Category</h6>
-                <div class="d-flex flex-wrap gap-2" id="categoryButtons">
-                    <!-- Category buttons loaded by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Story List - Scrollable -->
-            <div class="flex-grow-1 overflow-auto p-3" id="storyListContainer">
-                <div id="storyList">
-                    <!-- Stories loaded by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Footer with Stats -->
-            <div class="p-3 border-top bg-light flex-shrink-0">
-                <small class="text-muted d-block text-center" id="projectCount">
-                    Loading projects...
-                </small>
-            </div>
+        <div class="offcanvas-body">
+            <!-- Category Filters (populated by JS) -->
+            <div id="offcanvasCategoryButtons" class="mb-3"></div>
+            <!-- Project List (populated by JS) -->
+            <div id="offcanvasStoryList"></div>
         </div>
     </div>
 
     <!-- Navigation Controls (including zoom) -->
-    <div class="position-fixed bottom-0 start-0 m-3" style="z-index: 1010; transition: transform 0.3s ease;"
+    <div class="position-fixed bottom-0 start-0 m-3 controls-with-sidebar" style="z-index: 1010; transition: transform 0.3s ease;"
         id="navigationControls">
         <div class="btn-group shadow-sm" role="group">
             <button class="btn btn-light" id="zoomInBtn" title="Zoom In">
@@ -154,16 +255,16 @@
     <div class="position-fixed top-0 end-0 m-3" style="z-index: 1010;">
         <div class="btn-group shadow-sm" role="group">
             <button class="btn btn-light active" id="baseMapBtn" data-mode="base">
-                🗺️ Base
+                Base
             </button>
             <button class="btn btn-light" id="satelliteBtn" data-mode="satellite">
-                🛰️ Satellite
+                Satellite
             </button>
             <button class="btn btn-light" id="maskBtn" data-mode="mask">
-                🎭 Focus
+                Focus
             </button>
             <button class="btn btn-primary btn-sm d-none mx-1" id="installBtn">
-                📱 Install App
+                Install App
             </button>
         </div>
     </div>
