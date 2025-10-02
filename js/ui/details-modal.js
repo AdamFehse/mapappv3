@@ -4,10 +4,15 @@ class DetailsModal {
     constructor(dataManager) {
         this.dataManager = dataManager;
         this.modalElement = document.getElementById('detailsModal');
-        this.modal = new bootstrap.Modal(this.modalElement);
         this.title = document.getElementById('detailsModalLabel');
         this.body = document.getElementById('detailsModalBody');
-        this.closeBtn = document.getElementById('detailsModalClose');
+        
+        // Initialize Bootstrap modal only if element exists
+        if (this.modalElement) {
+            this.modal = new bootstrap.Modal(this.modalElement);
+        } else {
+            console.error('DetailsModal: Modal element not found');
+        }
         
         this.init();
     }
@@ -18,13 +23,23 @@ class DetailsModal {
 
     show(project) {
         if (!project) return;
+        
+        if (!this.modal) {
+            console.error('DetailsModal: Modal not initialized');
+            return;
+        }
 
         // Set the title
-        this.title.textContent = project.ProjectName || project.Name || 'Project Details';
+        if (this.title) {
+            this.title.textContent = project.ProjectName || project.Name || 'Project Details';
+        }
 
         // Create the modal content
         const content = this.createModalContent(project);
-        this.body.innerHTML = content;
+        if (this.body) {
+            this.body.innerHTML = content;
+        }
+        
         this.modal.show();
     }
 

@@ -69,7 +69,7 @@ class AppController {
 
             const project = this.dataManager.getCurrentProject();
             if (project && project.Latitude && project.Longitude) {
-                this.mapManager.centerOnProject(project.Latitude, project.Longitude, zoom=15);
+                this.mapManager.centerOnProject(project.Latitude, project.Longitude, 15);
                 this.markerManager.highlightMarker(index);
 
                 // Open the popup for the selected marker
