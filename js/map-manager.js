@@ -126,7 +126,7 @@ class MapManager {
             existingMask.remove();
         }
         
-        // Create mask overlay
+        // Create mask overlay -- KEEP THIS CSS FOR MASK MODE
         const maskOverlay = document.createElement('div');
         maskOverlay.className = 'map-mask-overlay';
         maskOverlay.style.cssText = `
@@ -138,7 +138,7 @@ class MapManager {
             background: radial-gradient(circle 150px at var(--mouse-x, 50%) var(--mouse-y, 50%), 
                 transparent 0%, 
                 transparent 40%, 
-                rgba(0,0,0,0.8) 100%);
+                rgba(132, 0, 255, 0.8) 100%);
             pointer-events: none;
             z-index: 400;
             transition: all 0.1s ease;
@@ -176,7 +176,7 @@ class MapManager {
         }
     }
 
-    centerOnProject(lat, lng, zoom = 12) {
+    centerOnProject(lat, lng, zoom = 8) {
         this.map.flyTo([lat, lng], zoom, {
             duration: CONFIG.MAP_ANIMATION_DURATION,
             easeLinearity: 0.25

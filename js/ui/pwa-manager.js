@@ -37,7 +37,7 @@ class PWAManager {
             }
             
             
-            //this.showInstallModal();
+            //this.showInstallModal(); // leaving this out for now.
      
         });
 

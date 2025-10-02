@@ -14,7 +14,6 @@ class DetailsModal {
 
     init() {
         // Bootstrap handles backdrop click and escape key automatically
-        // No need for custom event listeners
     }
 
     show(project) {

@@ -1,6 +1,6 @@
-// Service Worker for Chismapa Story Map PWA
+// Service Worker for MiTuCultura Frontera Story Map PWA
 
-const CACHE_NAME = 'chismapa-v1';
+const CACHE_NAME = 'MiTuCultura Frontera';
 const urlsToCache = [
   './',
   './index.html',

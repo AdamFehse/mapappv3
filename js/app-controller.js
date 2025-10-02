@@ -31,7 +31,6 @@ class AppController {
         this.markerManager.addMarkersToMap();
 
         // shows first project on page load
-        // Show first project if available
         // if (this.dataManager.getProjectCount() > 0) {
         //     this.showProject(0);
         // }
@@ -70,7 +69,7 @@ class AppController {
 
             const project = this.dataManager.getCurrentProject();
             if (project && project.Latitude && project.Longitude) {
-                this.mapManager.centerOnProject(project.Latitude, project.Longitude);
+                this.mapManager.centerOnProject(project.Latitude, project.Longitude, zoom=15);
                 this.markerManager.highlightMarker(index);
 
                 // Open the popup for the selected marker

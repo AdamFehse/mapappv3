@@ -1,4 +1,4 @@
-// Story Panel Manager - Simple implementation with toggle button visibility control
+// Story Panel Manager - Handles sidebar content and navigation controls
 
 class StoryPanel {
     constructor(dataManager) {
@@ -7,125 +7,190 @@ class StoryPanel {
         this.categoryButtons = document.getElementById('categoryButtons');
         this.projectCount = document.getElementById('projectCount');
         
-        // Initialize toggle button visibility control
-        this.initToggleButton();
+        // Initialize navigation controls positioning
+        this.initNavigationControls();
     }
 
-    initToggleButton() {
-        const offcanvasElement = document.getElementById('projectSidebar');
-        const toggleButton = document.getElementById('sidebarToggleBtn');
+    initNavigationControls() {
+        const sidebarElement = document.getElementById('projectSidebar');
         const navigationControls = document.getElementById('navigationControls');
-        
-        if (offcanvasElement && toggleButton) {
-            // Show toggle button when offcanvas is hidden
-            offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-                toggleButton.classList.remove('d-none');
-                
-                // Reset navigation controls position
-                if (navigationControls) {
-                    navigationControls.style.transform = 'translateX(0)';
-                }
+        const SIDEBAR_WIDTH = 400;
+        const TOGGLE_WIDTH = 56;
+
+        if (sidebarElement && navigationControls) {
+            // Listen for sidebar collapse/expand events
+            sidebarElement.addEventListener('shown.bs.collapse', () => {
+                // Sidebar is now open - shift nav controls to the right
+                navigationControls.style.left = `${SIDEBAR_WIDTH + TOGGLE_WIDTH}px`;
             });
-            
-            // Hide toggle button when offcanvas is shown
-            offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-                toggleButton.classList.add('d-none');
-                
-                // Move navigation controls to the right when sidebar opens
-                if (navigationControls) {
-                    navigationControls.style.transform = 'translateX(400px)';
-                    navigationControls.style.transition = 'transform 0.3s ease';
-                }
+
+            sidebarElement.addEventListener('hidden.bs.collapse', () => {
+                // Sidebar is now closed - move nav controls back
+                navigationControls.style.left = `${TOGGLE_WIDTH}px`;
             });
-            
-            // Since offcanvas starts closed, toggle button should be visible
-            // (no need to hide it initially)
+
+            // Initialize position (sidebar starts open with 'show' class)
+            const isOpen = sidebarElement.classList.contains('show');
+            navigationControls.style.left = isOpen ? `${SIDEBAR_WIDTH + TOGGLE_WIDTH}px` : `${TOGGLE_WIDTH}px`;
         }
+    }
+
+    renderCategoryWordCloud() {
+        const categories = this.dataManager.getCategories();
+        const wordCloud = document.getElementById('categoryWordCloud');
+        if (!wordCloud) return;
+        
+        wordCloud.innerHTML = '';
+        
+        if (!categories || categories.length === 0) {
+            wordCloud.innerHTML = '<p class="text-muted text-center py-3">No categories available</p>';
+            return;
+        }
+
+        // Get counts for each category - match the actual field name
+        const allProjects = this.dataManager.projects || [];
+        const categoryCounts = {};
+        
+        categories.forEach(category => {
+            categoryCounts[category] = allProjects.filter(p => 
+                p.ProjectCategory === category
+            ).length;
+        });
+
+        // Sort by count (most popular first) for better visual hierarchy
+        const sortedCategories = [...categories].sort((a, b) => 
+            categoryCounts[b] - categoryCounts[a]
+        );
+
+        // Calculate font sizes based on actual counts
+        const maxCount = Math.max(...Object.values(categoryCounts));
+        const minCount = Math.min(...Object.values(categoryCounts));
+        
+        // Create a title/header
+        const header = document.createElement('div');
+        header.className = 'd-flex justify-content-between align-items-center mb-2';
+        header.innerHTML = `
+            <small class="text-muted fw-bold">BROWSE BY CATEGORY</small>
+            <small class="text-muted">${categories.length} categories</small>
+        `;
+        wordCloud.appendChild(header);
+
+        // Create word cloud container
+        const cloudContainer = document.createElement('div');
+        cloudContainer.className = 'd-flex flex-wrap gap-2 align-items-center justify-content-center py-2';
+        
+        sortedCategories.forEach(category => {
+            const count = categoryCounts[category];
+            const percentage = maxCount > minCount ? (count - minCount) / (maxCount - minCount) : 0.5;
+            
+            // Scale font size between 0.85rem and 1.5rem based on count
+            const fontSize = 0.85 + (percentage * 0.65);
+            
+            // Create button instead of span for better interaction
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm position-relative';
+            btn.style.fontSize = `${fontSize}rem`;
+            btn.style.fontWeight = percentage > 0.6 ? '700' : '600';
+            btn.style.transition = 'all 0.2s ease';
+            btn.style.padding = '0.25rem 0.75rem';
+            btn.style.border = '2px solid transparent';
+            
+            // Color based on selection state
+            const isActive = this.dataManager.currentCategory === category;
+            if (isActive) {
+                btn.className += ' btn-primary';
+            } else {
+                btn.className += ' btn-outline-secondary';
+                btn.style.color = '#6c757d';
+            }
+            
+            btn.innerHTML = `
+                ${category}
+                <span class="badge bg-light text-dark ms-1" style="font-size: 0.65rem;">${count}</span>
+            `;
+            
+            // Hover effects
+            btn.onmouseenter = () => {
+                if (!isActive) {
+                    btn.style.transform = 'scale(1.1)';
+                    btn.style.borderColor = '#0d6efd';
+                    btn.style.color = '#0d6efd';
+                }
+            };
+            
+            btn.onmouseleave = () => {
+                if (!isActive) {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.borderColor = 'transparent';
+                    btn.style.color = '#6c757d';
+                }
+            };
+            
+            btn.onclick = () => filterByCategory(category);
+            
+            cloudContainer.appendChild(btn);
+        });
+        
+        wordCloud.appendChild(cloudContainer);
+
+        // Add "Show All" button at the bottom
+        const showAllBtn = document.createElement('button');
+        showAllBtn.className = 'btn btn-sm btn-link text-muted w-100 mt-2';
+        showAllBtn.textContent = this.dataManager.currentCategory ? 'Show All Categories' : 'All categories shown';
+        showAllBtn.disabled = !this.dataManager.currentCategory;
+        showAllBtn.onclick = () => filterByCategory('');
+        wordCloud.appendChild(showAllBtn);
     }
 
     renderCategories() {
-        const categories = this.dataManager.getCategories();
-        // Large screen mini-sidebar
-        const miniSidebar = document.querySelector('.mini-sidebar');
-        if (miniSidebar) {
-            // Clear except for toggle button if present
-            miniSidebar.innerHTML = '';
-            // All categories button
-            const allBtn = document.createElement('button');
-            allBtn.className = 'sidebar-icon-btn' + (this.dataManager.currentCategory === '' ? ' active' : '');
-            allBtn.title = 'All Categories';
-            allBtn.onclick = () => filterByCategory('');
-            allBtn.innerHTML = `<i class="bi bi-list"></i><span class="sidebar-label">All</span>`;
-            miniSidebar.appendChild(allBtn);
-            // Category buttons
-            categories.forEach(category => {
-                const btn = document.createElement('button');
-                btn.className = 'sidebar-icon-btn' + (this.dataManager.currentCategory === category ? ' active' : '');
-                btn.title = category;
-                btn.onclick = () => filterByCategory(category);
-                btn.innerHTML = `<i class="bi bi-tag"></i><span class="sidebar-label">${category}</span>`;
-                miniSidebar.appendChild(btn);
-            });
-        }
-        // Small screen offcanvas
-        const offcanvasCat = document.getElementById('offcanvasCategoryButtons');
-        if (offcanvasCat) {
-            offcanvasCat.innerHTML = '';
-            const allBtn = document.createElement('button');
-            allBtn.className = 'btn btn-outline-primary btn-sm m-1' + (this.dataManager.currentCategory === '' ? ' active' : '');
-            allBtn.onclick = () => filterByCategory('');
-            allBtn.textContent = 'All Categories';
-            offcanvasCat.appendChild(allBtn);
-            categories.forEach(category => {
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-outline-primary btn-sm m-1' + (this.dataManager.currentCategory === category ? ' active' : '');
-                btn.onclick = () => filterByCategory(category);
-                btn.textContent = category;
-                offcanvasCat.appendChild(btn);
-            });
-        }
+        // Just render the word cloud (removed duplicate legacy code)
+        this.renderCategoryWordCloud();
     }
 
     renderProjects() {
         const projects = this.dataManager.getFilteredProjects();
-        // Large screen: (optional) you can show a tooltip or modal, or skip rendering the list in the mini-sidebar
-        // Small screen: render into offcanvas
-        const offcanvasStoryList = document.getElementById('offcanvasStoryList');
-        if (offcanvasStoryList) {
-            // Update project count (optional)
-            this.updateProjectCount(projects.length);
-            if (projects.length === 0) {
-                offcanvasStoryList.innerHTML = '<div class="text-center text-muted py-4">No projects found for this category.</div>';
-                return;
+        const storyList = document.getElementById('storyList');
+        
+        if (!storyList) return;
+
+        this.updateProjectCount(projects.length);
+        
+        if (projects.length === 0) {
+            storyList.innerHTML = '<div class="text-center text-muted py-4">No projects found for this category.</div>';
+            return;
+        }
+        
+        storyList.innerHTML = projects.map((project, index) => {
+            const imageUrl = this.dataManager.getProfileImageUrl(project);
+            let imageHtml = '';
+            
+            if (imageUrl) {
+                imageHtml = `<img src="${imageUrl}" alt="Project Image" class="card-img-top bg-light w-100 rounded mb-3 border" style="height: 180px; object-fit: contain;" onerror="this.style.display='none'">`;
+            } else {
+                imageHtml = `<div class="card-img-top bg-light d-flex align-items-center justify-content-center text-secondary" style="height: 150px;">📷 No Image Available</div>`;
             }
-            offcanvasStoryList.innerHTML = projects.map((project, index) => {
-                const imageUrl = this.dataManager.getProfileImageUrl(project);
-                let imageHtml = '';
-                if (imageUrl) {
-                    imageHtml = `<img src="${imageUrl}" alt="Project Image" class="card-img-top bg-light" style="height: 180px; object-fit: contain; width: 100%;" onerror="this.style.display='none'">`;
-                } else {
-                    imageHtml = `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px; color: #6c757d;">📷 No Image Available</div>`;
-                }
-                return `
-                    <div class="card mb-3 shadow-sm border-0 ${index === this.dataManager.currentProjectIndex ? 'border-primary border-2' : ''}" 
-                         style="cursor: pointer; transition: all 0.2s ease;"
-                         onclick="showProjectWithPopup(${index})"
-                         onmouseover="this.classList.add('shadow'); this.style.transform='translateY(-2px)';"
-                         onmouseout="this.classList.remove('shadow'); this.style.transform='translateY(0)';">
-                        ${imageHtml}
-                        <div class="card-body">
-                            <h5 class="card-title text-primary fw-bold">${project.ProjectName || project.Name || 'Project'}</h5>
-                            ${this.dataManager.getArtworkInfo && this.dataManager.getArtworkInfo(project) ? `<span class="badge bg-success text-white mb-2">🎨 Has Artwork</span>` : ''}
-                            <p class="card-text text-muted small mb-1">📍 ${project.Location || 'Location not specified'}</p>
-                            <span class="badge bg-secondary">${project.ProjectCategory || project.College || 'Uncategorized'}</span>
-                            <div class="mt-2 text-center">
-                                <small class="text-muted">Click to view on map →</small>
-                            </div>
+            
+            const isActive = index === this.dataManager.currentProjectIndex;
+            
+            return `
+                <div class="card mb-3 shadow-sm ${isActive ? 'border-primary border-2' : 'border-0'}" 
+                     style="cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+                     onclick="showProjectWithPopup(${index})"
+                     onmouseenter="this.style.transform='translateY(-4px)'; this.classList.add('shadow');"
+                     onmouseleave="this.style.transform='translateY(0)'; this.classList.remove('shadow');">
+                    ${imageHtml}
+                    <div class="card-body">
+                        <h5 class="card-title text-primary fw-bold">${project.ProjectName || project.Name || 'Project'}</h5>
+                        ${this.dataManager.getArtworkInfo && this.dataManager.getArtworkInfo(project) ? `<span class="badge bg-success text-white mb-2">🎨 Has Artwork</span>` : ''}
+                        <p class="card-text text-muted small mb-1">📍 ${project.Location || 'Location not specified'}</p>
+                        <span class="badge bg-secondary">${project.ProjectCategory || project.College || 'Uncategorized'}</span>
+                        <div class="mt-2 text-center">
+                            <small class="text-muted">Click to view on map →</small>
                         </div>
                     </div>
-                `;
-            }).join('');
-        }
+                </div>
+            `;
+        }).join('');
     }
     
     updateProjectCount(count) {
